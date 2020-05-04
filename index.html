@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Excel Cell Border</title>
+    <style>
+      :root {
+        --primary-color: 'blueviolet';
+      }
+
+      table,
+      th,
+      td {
+        border-collapse: collapse;
+        border: 1px solid grey;
+        padding: 16px;
+      }
+
+      @supports (background: paint(id)) {
+        td:focus {
+          outline: none;
+          background: paint(excel-border);
+        }
+      }
+
+      @supports not (background: paint(id)) {
+        td:focus {
+          outline: 2px solid blueviolet;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>Column 1</th>
+          <th>Column 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td tabindex="1">Data 1</td>
+          <td tabindex="1">Data 2</td>
+        </tr>
+        <tr>
+          <td tabindex="1">Data 1</td>
+          <td tabindex="1">Data 2</td>
+        </tr>
+        <tr>
+          <td tabindex="1">Data 1</td>
+          <td tabindex="1">Data 2</td>
+        </tr>
+      </tbody>
+    </table>
+    <script type="module">
+      const paint = `
+        registerPaint(
+          'excel-border',
+          class {
+            static get inputProperties() {
+              return ['--primary-color'];
+            }
+
+            paint(ctx, { width, height }, props) {
+              const primaryColor = props
+                .get('--primary-color')
+                .toString()
+                .replace(/"/g, '');
+              ctx.lineWidth = 3;
+              ctx.strokeStyle = primaryColor;
+
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+
+              ctx.lineTo(width, 0);
+              ctx.lineTo(width, height - 8);
+              ctx.moveTo(width - 8, height);
+              ctx.lineTo(0, height);
+              ctx.lineTo(0, 0);
+
+              ctx.stroke();
+
+              ctx.fillStyle = primaryColor;
+              ctx.fillRect(width - 6, height - 6, 18, 18);
+            }
+          }
+        );`;
+
+      const worklet = new Blob([paint], {
+        type: 'application/javascript',
+      });
+
+      const url = URL.createObjectURL(worklet);
+
+      if (CSS && 'paintWorklet' in CSS) {
+        CSS.paintWorklet.addModule(url);
+      }
+    </script>
+  </body>
+</html>
